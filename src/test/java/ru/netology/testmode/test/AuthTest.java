@@ -5,6 +5,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.netology.testmode.data.DataGenerator;
 
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 import static ru.netology.testmode.data.DataGenerator.Registration.getRegisteredUser;
@@ -23,38 +26,36 @@ class AuthTest {
     @Test
     @DisplayName("Should successfully login with active registered user")
     void shouldSuccessfulLoginIfRegisteredActiveUser() throws InterruptedException {
-//        var registeredUser = getRegisteredUser("active");
-        DataGenerator.RegistrationDto registeredUser = getRegisteredUser("active");
-        // TODO: добавить логику теста, в рамках которого будет выполнена попытка входа в личный кабинет с учётными
-        //  данными зарегистрированного активного пользователя, для заполнения полей формы используйте
-        //  пользователя registeredUser
+        var registeredUser = getRegisteredUser("active");
+        // попытка входа в личный кабинет с учётными данными зарегистрированного активного пользователя
         $("[name='login']").sendKeys(registeredUser.getLogin());
         $("[name='password']").sendKeys(registeredUser.getPassword());
         $("[data-test-id='action-login']").click();
-        Thread.sleep(2000);
+        $("h2.heading").shouldBe(visible, Duration.ofSeconds(5))
+                .shouldHave(exactText("Личный кабинет"));
     }
 
     @Test
     @DisplayName("Should get error message if login with not registered user")
     void shouldGetErrorIfNotRegisteredUser() throws InterruptedException {
         var notRegisteredUser = getUser("active");
-        // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет
-        //  незарегистрированного пользователя, для заполнения полей формы используйте пользователя notRegisteredUser
+        // попытка входа в личный кабинет незарегистрированного пользователя
         $("[name='login']").sendKeys(notRegisteredUser.getLogin());
         $("[name='password']").sendKeys(notRegisteredUser.getPassword());
         $("[data-test-id='action-login']").click();
-        Thread.sleep(2000);
+        $(".notification__content").shouldBe(visible, Duration.ofSeconds(5))
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
     }
 
     @Test
     @DisplayName("Should get error message if login with blocked registered user")
     void shouldGetErrorIfBlockedUser() throws InterruptedException {
         var blockedUser = getRegisteredUser("blocked");
-        // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет,
-        //  заблокированного пользователя, для заполнения полей формы используйте пользователя blockedUser
+        // попытка входа в личный кабинет  заблокированного пользователя
         $("[name='login']").sendKeys(blockedUser.getLogin());
         $("[name='password']").sendKeys(blockedUser.getPassword());
         $("[data-test-id='action-login']").click();
+        $(".notification_status_error .notification__content").shouldBe(visible).shouldHave(text("Пользователь заблокирован"));
         Thread.sleep(2000);
     }
 
@@ -63,13 +64,12 @@ class AuthTest {
     void shouldGetErrorIfWrongLogin() throws InterruptedException {
         var registeredUser = getRegisteredUser("active");
         var wrongLogin = getRandomLogin();
-        // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет с неверным
-        //  логином, для заполнения поля формы "Логин" используйте переменную wrongLogin,
-        //  "Пароль" - пользователя registeredUser
-        $("[name='login']").sendKeys(wrongLogin);
+        // попытка входа в личный кабинет с неверным логином и верным паролем
+              $("[name='login']").sendKeys(wrongLogin);
         $("[name='password']").sendKeys(registeredUser.getPassword());
         $("[data-test-id='action-login']").click();
-        Thread.sleep(2000);
+        $(".notification__content").shouldBe(visible, Duration.ofSeconds(5))
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
     }
 
     @Test
@@ -77,12 +77,11 @@ class AuthTest {
     void shouldGetErrorIfWrongPassword() throws InterruptedException {
         var registeredUser = getRegisteredUser("active");
         var wrongPassword = getRandomPassword();
-        // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет с неверным
-        //  паролем, для заполнения поля формы "Логин" используйте пользователя registeredUser,
-        //  "Пароль" - переменную wrongPassword
-        $("[name='login']").sendKeys(registeredUser.getLogin());
+        // попытка входа в личный кабинет с неверным паролем и верным логином
+              $("[name='login']").sendKeys(registeredUser.getLogin());
         $("[name='password']").sendKeys(wrongPassword);
         $("[data-test-id='action-login']").click();
-        Thread.sleep(2000);
+        $(".notification__content").shouldBe(visible, Duration.ofSeconds(5))
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
     }
 }

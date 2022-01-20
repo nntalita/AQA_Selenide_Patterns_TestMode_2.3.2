@@ -15,6 +15,19 @@ import static io.restassured.RestAssured.given;
 @Data
 
 public class DataGenerator {
+
+
+    @Value
+    public static class User {
+        String login;
+        String password;
+        String status;
+    }
+
+    public DataGenerator() {
+    }
+    private static final Faker faker = new Faker(new Locale("en"));
+
     private static final RequestSpecification requestSpec = new RequestSpecBuilder()
             .setBaseUri("http://localhost")
             .setPort(9999)
@@ -22,21 +35,15 @@ public class DataGenerator {
             .setContentType(ContentType.JSON)
             .log(LogDetail.ALL)
             .build();
-    private static final Faker faker = new Faker(new Locale("en"));
-
-    public DataGenerator() {
-    }
 
 
-    private static void sendRequest(RegistrationDto user) {
-        // TODO: отправить запрос на указанный в требованиях path, передав в body запроса объект user
-        //  и не забудьте передать подготовленную спецификацию requestSpec.
-        //  Пример реализации метода показан в условии к задаче.
 
-//          // сам запрос
+
+    private static void sendRequest(User user) {
+        // отправить запрос на указанный в требованиях path
         given() // "дано"
                 .spec(requestSpec) // указываем, какую спецификацию используем
-                .body(new RegistrationDto(getRandomLogin(), getRandomPassword(), user.getStatus())) // передаём в теле объект, который будет преобразован в JSON
+                .body(user) // передаём в теле объект, который будет преобразован в JSON
                 .when() // "когда"
                 .post("/api/system/users") // на какой путь, относительно BaseUri отправляем запрос
                 .then() // "тогда ожидаем"
@@ -44,15 +51,11 @@ public class DataGenerator {
     }
 
     public static String getRandomLogin() {
-        // TODO: добавить логику для объявления переменной login и задания её значения, для генерации
-        //  случайного логина используйте faker
         String login = faker.name().username();
         return login;
     }
 
     public static String getRandomPassword() {
-        // TODO: добавить логику для объявления переменной password и задания её значения, для генерации
-        //  случайного пароля используйте faker
         String password = faker.internet().password();
 
         return password;
@@ -62,26 +65,18 @@ public class DataGenerator {
         private Registration() {
         }
 
-        public static RegistrationDto getUser(String status) {
-            // TODO: создать пользователя user используя методы getRandomLogin(), getRandomPassword() и параметр status
-            RegistrationDto user = new RegistrationDto(getRandomLogin(), getRandomPassword(), status);
+        public static User getUser(String status) {
+            User user = new User(getRandomLogin(), getRandomPassword(), status);
             return user;
         }
 
-        public static RegistrationDto getRegisteredUser(String status) {
-            // TODO: объявить переменную registeredUser и присвоить ей значение возвращённое getUser(status).
-            // Послать запрос на регистрацию пользователя с помощью вызова sendRequest(registeredUser)
-            RegistrationDto registeredUser = getUser(status);
+        public static User getRegisteredUser(String status) {
+            User registeredUser = getUser(status);
             sendRequest(registeredUser);
             return registeredUser;
         }
     }
 
-    @Value
-    public static class RegistrationDto {
-        String login;
-        String password;
-        String status;
-    }
+
 
 }
